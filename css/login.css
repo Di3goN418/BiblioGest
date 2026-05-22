@@ -1,0 +1,19 @@
+body { background: #fff7ed; min-height: 100vh; }
+    .left-panel {
+      background: linear-gradient(135deg, #ff7a00, #ffae42);
+      min-height: 100vh;
+    }
+    .left-panel img { max-height: 100vh; object-fit: cover; opacity: .9; }
+    .login-card {
+      width: 360px;
+      border-radius: 18px;
+      box-shadow: 0 15px 40px rgba(0,0,0,.12);
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-10px); }
+    }
+    .float-img { animation: float 3s ease-in-out infinite; }
+    @media (max-width: 767px) {
+      .left-panel { min-height: 200px; }
+    }

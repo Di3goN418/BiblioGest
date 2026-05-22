@@ -1,0 +1,90 @@
+/* BiblioGest — app.css
+   Solo lo que Bootstrap no cubre: sidebar, brand color, pequeños helpers */
+
+:root {
+  --brand:       #ff7a00;
+  --brand-dark:  #e06a00;
+  --brand-light: #fff3e0;
+}
+
+/* ── SIDEBAR ─────────────────────────────── */
+.sidebar {
+  background: linear-gradient(180deg, #ff7a00, #ffae42);
+  min-height: 100vh;
+  width: 230px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar .nav-link {
+  color: rgba(255,255,255,.85);
+  border-radius: 10px;
+  padding: 10px 12px;
+  transition: background .2s;
+}
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+  background: rgba(255,255,255,.22);
+  color: #fff;
+}
+.sidebar .brand {
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 4px 12px;
+  display: block;
+}
+
+/* offcanvas hereda el mismo gradiente */
+.offcanvas.sidebar { width: 230px !important; }
+
+/* ── MOBILE NAVBAR ───────────────────────── */
+.mobile-nav { background: linear-gradient(90deg, #ff7a00, #ffae42); }
+
+/* ── BOTÓN BRAND ─────────────────────────── */
+.btn-brand            { background: var(--brand);      color: #fff; border: none; }
+.btn-brand:hover      { background: var(--brand-dark); color: #fff; }
+.btn-brand:focus      { box-shadow: 0 0 0 .25rem rgba(255,122,0,.35); }
+
+/* ── AVATAR USUARIO ──────────────────────── */
+.avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff7a00, #ffae42);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── IMAGEN LIBRO EN TABLA ───────────────── */
+.img-libro-sm {
+  width: 35px; height: 48px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+/* ── STAT CARDS ──────────────────────────── */
+.stat-card { border-left: 4px solid var(--brand); }
+
+/* ── FOCUS BRAND ─────────────────────────── */
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 .2rem rgba(255,122,0,.2);
+}
+
+/* ── PREVIEW IMAGEN ──────────────────────── */
+#preview, #edit_preview {
+  max-height: 160px;
+  object-fit: contain;
+  border-radius: 8px;
+  display: none;
+}
