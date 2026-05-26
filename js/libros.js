@@ -1,8 +1,8 @@
-// libros.js — lógica de la vista de libros
+// Lógica de la vista de libros
 
 document.addEventListener('DOMContentLoaded', function () {
 
-  // ── Preview imagen al AGREGAR ──────────────
+  // Preview imagen al AGREGAR 
   const imagenInput = document.getElementById('imagenInput');
   const preview     = document.getElementById('preview');
 
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ── Preview imagen al EDITAR ───────────────
+  // Preview imagen al EDITAR 
   const editImagen  = document.getElementById('edit_imagen');
   const editPreview = document.getElementById('edit_preview');
 
@@ -38,9 +38,52 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  // Validar que al menos un autor y un género estén seleccionados
+  // Formulario agregar
+  const formAgregar = document.querySelector('#modalAgregar form');
+  if (formAgregar) {
+    formAgregar.addEventListener('submit', function (e) {
+      const autores = document.querySelectorAll('#modalAgregar input[name="autores[]"]:checked');
+      const generos = document.querySelectorAll('#modalAgregar input[name="generos[]"]:checked');
+      const nuevoAutor = document.querySelector('#modalAgregar input[name="nuevo_autor"]').value.trim();
+      const nuevoGenero = document.querySelector('#modalAgregar input[name="nuevo_genero"]').value.trim();
+
+      if (autores.length === 0 && !nuevoAutor) {
+        e.preventDefault();
+        alert('Selecciona o escribe al menos un autor.');
+        return;
+      }
+      if (generos.length === 0 && !nuevoGenero) {
+        e.preventDefault();
+        alert('Selecciona o escribe al menos un género.');
+      }
+    });
+  }
+
+  // Formulario editar
+  const formEditar = document.querySelector('#modalEditar form');
+  if (formEditar) {
+    formEditar.addEventListener('submit', function (e) {
+      const autores = document.querySelectorAll('#modalEditar input[name="autores_edit[]"]:checked');
+      const generos = document.querySelectorAll('#modalEditar input[name="generos_edit[]"]:checked');
+      const nuevoAutor = document.getElementById('edit_nuevo_autor').value.trim();
+      const nuevoGenero = document.getElementById('edit_nuevo_genero').value.trim();
+
+      if (autores.length === 0 && !nuevoAutor) {
+        e.preventDefault();
+        alert('Selecciona o escribe al menos un autor.');
+        return;
+      }
+      if (generos.length === 0 && !nuevoGenero) {
+        e.preventDefault();
+        alert('Selecciona o escribe al menos un género.');
+      }
+    });
+  }
+
 });
 
-// ── Rellenar modal editar con datos del libro ──
+// Rellenar modal editar con datos del libro 
 // autorIds y generoIds llegan como arrays PHP → JSON
 function editarLibro(id, titulo, isbn, anio, editorial, stock, autorIds, generoIds) {
 
@@ -67,3 +110,5 @@ function editarLibro(id, titulo, isbn, anio, editorial, stock, autorIds, generoI
   if (na) na.value = '';
   if (ng) ng.value = '';
 }
+
+

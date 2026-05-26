@@ -1,4 +1,4 @@
-// main.js — utilerías compartidas en todo el sistema
+// utilerías compartidas en todo el sistema
 
 document.addEventListener('DOMContentLoaded', function () {
 

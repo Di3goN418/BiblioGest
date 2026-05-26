@@ -1,8 +1,8 @@
-// prestamos.js — lógica de la vista de préstamos
+// Lógica de la vista de préstamos
 
 document.addEventListener('DOMContentLoaded', function () {
 
-  // ── Fecha mínima de devolución = mañana ───
+  // Fecha mínima de devolución (mañana) 
   const fechaDev = document.getElementById('fechaDev');
   if (fechaDev) {
     const manana = new Date();
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
-// ── Mostrar info del libro al seleccionarlo en el modal ──
+// Mostrar info del libro al seleccionarlo en el modal 
 function mostrarInfoLibro(sel) {
   const opt  = sel.options[sel.selectedIndex];
   const info = document.getElementById('libroInfo');
