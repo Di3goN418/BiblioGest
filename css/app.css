@@ -1,5 +1,4 @@
-/* BiblioGest — app.css
-   Solo lo que Bootstrap no cubre: sidebar, brand color, pequeños helpers */
+/* Estilos generales */
 
 :root {
   --brand:       #ff7a00;
@@ -7,7 +6,7 @@
   --brand-light: #fff3e0;
 }
 
-/* ── SIDEBAR ─────────────────────────────── */
+/* SIDEBAR */
 .sidebar {
   background: linear-gradient(180deg, #ff7a00, #ffae42);
   min-height: 100vh;
