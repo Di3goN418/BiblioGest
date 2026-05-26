@@ -3,6 +3,7 @@ include("conexion.php");
 
 $id = (int)$_GET['id'];
 
+// Actualiza en la BD la multa
 $stmt = $conexion->prepare("UPDATE multas SET estado='Pagada' WHERE id=?");
 $stmt->bind_param("i", $id);
 $stmt->execute();

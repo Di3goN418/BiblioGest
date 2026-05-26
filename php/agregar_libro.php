@@ -1,6 +1,8 @@
 <?php
+// Incluye la conexion
 include("conexion.php");
 
+// Datos ingresados en formulario
 $titulo           = trim($_POST['titulo']           ?? '');
 $isbn             = trim($_POST['isbn']             ?? '');
 $anio_publicacion = trim($_POST['anio_publicacion'] ?? '');
