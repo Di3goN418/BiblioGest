@@ -1,18 +1,32 @@
 <?php
+// inicia una sesion para mantener el login e incluye la conexion 
 session_start();
 include("php/conexion.php");
 
-if (!isset($_SESSION['usuario'])) { header("Location: login.php"); exit(); }
 
-$limite   = 8;
-$pagina   = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
-$inicio   = ($pagina - 1) * $limite;
-$busqueda = isset($_GET['buscar']) ? $conexion->real_escape_string($_GET['buscar']) : "";
+// verifica si no hay una sesion inciada 
+if (!isset($_SESSION['usuario'])) { 
+    // redirige el Login si no hay sesion activa
+  header("Location: login.php"); 
+    // finaliza la ejecucion del script
+  exit(); }
 
+// Paginacion de registro de prestamos 
+$limite   = 8; // Limite de paginas
+$pagina   = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1; // Obtiene el numero de pagina en la URL
+$inicio   = ($pagina - 1) * $limite; // Calcula el inicio de la consulta
+$busqueda = isset($_GET['buscar']) ? $conexion->real_escape_string($_GET['buscar']) : ""; // Obtiene el texto de la busqueda
+
+// Genera filtros dinámicos de búsqueda cin usuarios o libros
 $where = $busqueda
-    ? "WHERE u.nombre LIKE '%$busqueda%' OR l.titulo LIKE '%$busqueda%'"
+    ? "WHERE u.nombre LIKE '%$busqueda%' 
+    OR l.titulo LIKE '%$busqueda%'"
     : "";
 
+// Consulta los préstamos registrados
+// Relaciona los prestamos con los usuarios
+// Ordena por fecha de registro
+// limita los registros por pagina
 $resultado = $conexion->query("
     SELECT p.*, u.nombre AS usuario_nombre, l.titulo AS libro_titulo, l.imagen AS libro_imagen
     FROM prestamos p
@@ -21,16 +35,16 @@ $resultado = $conexion->query("
     $where ORDER BY p.id DESC LIMIT $inicio, $limite
 ");
 
-$totalQ       = $conexion->query("SELECT COUNT(*) as t FROM prestamos p JOIN usuarios u ON p.id_usuario=u.id JOIN libros l ON p.id_libro=l.id $where");
-$total        = $totalQ->fetch_assoc()['t'];
+$totalQ       = $conexion->query("SELECT COUNT(*) as t FROM prestamos p JOIN usuarios u ON p.id_usuario=u.id JOIN libros l ON p.id_libro=l.id $where"); // Obtiene el total de préstamos registrados
+$total        = $totalQ->fetch_assoc()['t']; // Calcula la cantidad total de páginas
 $totalPaginas = ceil($total / $limite);
 
-$activos   = $conexion->query("SELECT COUNT(*) as t FROM prestamos WHERE estado='Activo'")->fetch_assoc()['t'];
-$devueltos = $conexion->query("SELECT COUNT(*) as t FROM prestamos WHERE estado='Devuelto'")->fetch_assoc()['t'];
-$vencidos  = $conexion->query("SELECT COUNT(*) as t FROM prestamos WHERE estado='Activo' AND fecha_devolucion < CURDATE()")->fetch_assoc()['t'];
+$activos   = $conexion->query("SELECT COUNT(*) as t FROM prestamos WHERE estado='Activo'")->fetch_assoc()['t']; // Cuenta los préstamos activos
+$devueltos = $conexion->query("SELECT COUNT(*) as t FROM prestamos WHERE estado='Devuelto'")->fetch_assoc()['t']; // Cuenta los préstamos devueltos
+$vencidos  = $conexion->query("SELECT COUNT(*) as t FROM prestamos WHERE estado='Activo' AND fecha_devolucion < CURDATE()")->fetch_assoc()['t']; // Cuenta los préstamos vencidos
 
-$usuarios = $conexion->query("SELECT id, nombre FROM usuarios ORDER BY nombre");
-$libros   = $conexion->query("SELECT id, titulo, stock FROM libros WHERE stock > 0 ORDER BY titulo");
+$usuarios = $conexion->query("SELECT id, nombre FROM usuarios ORDER BY nombre"); // Obtiene la lista de usuarios
+$libros   = $conexion->query("SELECT id, titulo, stock FROM libros WHERE stock > 0 ORDER BY titulo"); // Obtiene los libros disponibles para préstamo
 
 $paginaActiva = 'prestamos';
 ?>
@@ -40,12 +54,15 @@ $paginaActiva = 'prestamos';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Préstamos — BiblioGest</title>
+  <!-- importa Bootstrap y Font Awesome -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <!-- conecta con los estilos especificos -->
   <link rel="stylesheet" href="css/app.css">
 </head>
 <body class="bg-light">
 
+<!-- barra de navegación para dispositivos moviles (prueba)-->
 <nav class="navbar d-md-none mobile-nav px-3 py-2">
   <button class="btn btn-link text-white p-0" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
     <i class="fa-solid fa-bars fa-lg"></i>
@@ -54,10 +71,12 @@ $paginaActiva = 'prestamos';
 </nav>
 
 <div class="d-flex">
+  <!-- coloca/incluye el menu lateral -->
   <?php include "php/sidebar.php"; ?>
 
   <main class="flex-grow-1 p-4">
 
+    <!-- Define los mensajes de respuesta del sistema -->
     <?php if (isset($_GET['mensaje'])): ?>
       <?php $msgs = [
         'creado'         => ['success', '✅ Préstamo registrado correctamente'],
@@ -66,43 +85,51 @@ $paginaActiva = 'prestamos';
         'error_stock'    => ['danger',  '❌ El libro no tiene stock disponible'],
         'error_prestamo' => ['danger',  '❌ El usuario ya tiene un préstamo activo'],
       ]; ?>
-      <?php [$tipo, $texto] = $msgs[$_GET['mensaje']] ?? ['info','Operación completada']; ?>
+      <?php [$tipo, $texto] = $msgs[$_GET['mensaje']] ?? ['info','Operación completada']; ?> <!-- Obtiene el tipo y texto de la alerta -->
       <div class="alert alert-<?= $tipo ?> alert-dismissible alert-autohide fade show">
         <?= $texto ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>
     <?php endif; ?>
 
+    <!-- Encabezado principal -->
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h4 class="fw-bold mb-0">
         <i class="fa-solid fa-handshake me-2" style="color:var(--brand)"></i>Préstamos
       </h4>
+      <!-- Boton para abrir el formulario de prestamos -->
       <button class="btn btn-brand" data-bs-toggle="modal" data-bs-target="#modalNuevo">
         <i class="fa-solid fa-plus me-1"></i> Nuevo préstamo
       </button>
     </div>
 
     <!-- STATS -->
+    <!-- Tarjetas con estadisticas de prestamos -->
     <div class="row g-3 mb-4">
       <div class="col-4">
         <div class="card border-0 shadow-sm stat-card" style="border-left-color:#4e73df!important">
           <div class="card-body py-2">
+            <!-- Muestra la cantidad de prestamos activos -->
             <p class="text-muted small mb-0">Activos</p>
             <h4 class="fw-bold mb-0"><?= $activos ?></h4>
           </div>
         </div>
       </div>
+
       <div class="col-4">
         <div class="card border-0 shadow-sm stat-card" style="border-left-color:#1cc88a!important">
           <div class="card-body py-2">
+            <!-- Muestra la cantidad de prestamos devueltos -->
             <p class="text-muted small mb-0">Devueltos</p>
             <h4 class="fw-bold mb-0"><?= $devueltos ?></h4>
           </div>
         </div>
       </div>
+
       <div class="col-4">
         <div class="card border-0 shadow-sm stat-card" style="border-left-color:#e74a3b!important">
           <div class="card-body py-2">
+            <!-- Muestra la cantidad de prestamos vencidos -->
             <p class="text-muted small mb-0">Vencidos</p>
             <h4 class="fw-bold mb-0"><?= $vencidos ?></h4>
           </div>
@@ -110,6 +137,7 @@ $paginaActiva = 'prestamos';
       </div>
     </div>
 
+    <!-- Formulario de busqueda de prestamos -->
     <form method="GET" class="mb-3">
       <div class="input-group">
         <span class="input-group-text bg-white"><i class="fa-solid fa-search text-muted"></i></span>
@@ -119,6 +147,7 @@ $paginaActiva = 'prestamos';
       </div>
     </form>
 
+    <!-- Tabla principal de multas -->
     <div class="card border-0 shadow-sm">
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
@@ -134,12 +163,18 @@ $paginaActiva = 'prestamos';
             </tr>
           </thead>
           <tbody>
-          <?php if ($resultado && $resultado->num_rows > 0):
+          <?php 
+          // Verifica si existen registros para mostrar
+          if ($resultado && $resultado->num_rows > 0):
+            // Recorre los registros de prestamos
             while ($row = $resultado->fetch_assoc()):
+              // obtiene la fecha actual
               $hoy  = date("Y-m-d");
               $dias = 0;
+              // Calcula el tiempo de retraso
               if ($row['estado'] == 'Activo' && $hoy > $row['fecha_devolucion'])
                   $dias = (int)((strtotime($hoy) - strtotime($row['fecha_devolucion'])) / 86400);
+                // Forlato para el estado de lo prestamos
               if ($row['estado'] == 'Devuelto')                   { $badge = 'bg-success'; $label = 'Devuelto'; }
               elseif ($row['estado'] == 'Activo' && $dias > 0)    { $badge = 'bg-danger';  $label = 'Vencido';  }
               else                                                 { $badge = 'bg-primary'; $label = 'Activo';   }
@@ -147,6 +182,7 @@ $paginaActiva = 'prestamos';
             <tr>
               <td>
                 <div class="d-flex align-items-center gap-2">
+                <!-- Muestra la imagen del libro o una imagen predeterminada -->
                   <img src="uploads/<?= htmlspecialchars($row['libro_imagen'] ?? '') ?>"
                        class="img-libro-sm"
                        onerror="this.src='https://via.placeholder.com/35x48?text=📖'">
@@ -154,24 +190,32 @@ $paginaActiva = 'prestamos';
                 </div>
               </td>
               <td><?= htmlspecialchars($row['usuario_nombre']) ?></td>
+              <!-- Formatea la fecha de los prestamos -->
               <td><small><?= date("d/m/Y", strtotime($row['fecha_prestamo'])) ?></small></td>
               <td><small><?= date("d/m/Y", strtotime($row['fecha_devolucion'])) ?></small></td>
               <td>
+                <!-- Verifica si el prestamo presenta retraso -->
                 <?php if ($dias > 0): ?>
                   <span class="text-danger fw-bold small">+<?= $dias ?> días</span>
                 <?php else: ?>
                   <span class="text-muted">—</span>
                 <?php endif; ?>
               </td>
+                <!-- Muestra el estado visual del prestamo -->
               <td><span class="badge <?= $badge ?>"><?= $label ?></span></td>
               <td>
+                <!-- Verifica si el prestamo sigue activo -->
                 <?php if ($row['estado'] == 'Activo'): ?>
+                  <!-- Botón para registrar la devolución del libro -->
+                    <!-- Solicita confirmación antes de devolver -->
                   <a href="php/devolver_libro.php?id=<?= $row['id'] ?>"
                      onclick="return confirm('¿Marcar como devuelto?')"
                      class="btn btn-sm btn-outline-success me-1" title="Devolver">
-                    <i class="fa-solid fa-rotate-left"></i>
+                     <i class="fa-solid fa-rotate-left"></i>
                   </a>
                 <?php endif; ?>
+                <!-- Botón para eliminar el préstamo -->
+                <!-- Solicita confirmación antes de eliminar -->
                 <a href="php/eliminar_prestamo.php?id=<?= $row['id'] ?>"
                    onclick="return confirm('¿Eliminar este préstamo?')"
                    class="btn btn-sm btn-outline-danger" title="Eliminar">
@@ -190,6 +234,7 @@ $paginaActiva = 'prestamos';
       </div>
     </div>
 
+    <!-- Verifica si requiere paginacion -->
     <?php if ($totalPaginas > 1): ?>
     <nav class="mt-3">
       <ul class="pagination pagination-sm">
@@ -205,7 +250,7 @@ $paginaActiva = 'prestamos';
   </main>
 </div>
 
-<!-- MODAL NUEVO PRÉSTAMO -->
+<!-- Modal para registrar prestamos -->
 <div class="modal fade" id="modalNuevo" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -213,10 +258,12 @@ $paginaActiva = 'prestamos';
         <h5 class="modal-title text-white"><i class="fa-solid fa-handshake me-2"></i>Nuevo préstamo</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
+      <!-- Formulario para registrar préstamos -->
       <form action="php/crear_prestamo.php" method="POST">
         <div class="modal-body">
           <div class="row g-3">
             <div class="col-12">
+              <!-- Lista de usuarios disponibles -->
               <label class="form-label fw-semibold">Usuario <span class="text-danger">*</span></label>
               <select name="id_usuario" class="form-select" required>
                 <option value="">— Seleccionar usuario —</option>
@@ -226,6 +273,7 @@ $paginaActiva = 'prestamos';
               </select>
             </div>
             <div class="col-12">
+              <!-- Lista de libros disponibles -->
               <label class="form-label fw-semibold">Libro <span class="text-danger">*</span></label>
               <select name="id_libro" id="selectLibro" class="form-select" required onchange="mostrarInfoLibro(this)">
                 <option value="">— Seleccionar libro —</option>
@@ -238,6 +286,8 @@ $paginaActiva = 'prestamos';
                 <?php endwhile; ?>
               </select>
             </div>
+
+            <!-- Panel informativo del libro seleccionado -->
             <div class="col-12 d-none" id="libroInfo">
               <div class="alert alert-info py-2 mb-0 small">
                 <strong id="libroNombre"></strong> — Disponibles: <strong id="libroStock"></strong>
@@ -245,6 +295,7 @@ $paginaActiva = 'prestamos';
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold">Fecha de préstamo</label>
+              <!-- Establece la pecha actual por defecto -->
               <input type="date" name="fecha_prestamo" class="form-control"
                      value="<?= date('Y-m-d') ?>" required>
             </div>
@@ -263,7 +314,9 @@ $paginaActiva = 'prestamos';
   </div>
 </div>
 
+<!-- Libreria JavaScript de Bootstrap -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Archivo JS con funciones de libros -->
 <script src="js/main.js"></script>
 <script src="js/prestamos.js"></script>
 </body>
